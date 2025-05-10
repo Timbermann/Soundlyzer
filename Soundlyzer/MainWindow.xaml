@@ -7,6 +7,42 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" MinWidth="100"/>
+            <ColumnDefinition Width="auto" MinWidth="100"/>
+        </Grid.ColumnDefinitions>
+        <ListView ItemsSource="{Binding Files}" Margin="10">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Nazwa Pliku" Width="200" 
+                                    DisplayMemberBinding="{Binding FileName}" />
+
+                    <GridViewColumn Header="Status" Width="100"
+                                    DisplayMemberBinding="{Binding Status}" />
+
+                    <GridViewColumn Header="Postęp" Width="150">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Akcje" Width="300">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                                    <Button Content="Start" Command="{Binding StartCommand}" />
+                                    <Button Content="{Binding PauseResumeLabel}" Command="{Binding PauseResumeCommand}" />
+                                    <Button Content="Anuluj" Command="{Binding CancelCommand}" />
+                                    <Button Content="Otwórz" Command="{Binding OpenCommand}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
     </Grid>
 </Window>
