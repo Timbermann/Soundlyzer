@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Soundlyzer.View;
+using System.Windows;
+using System.Windows.Input;
 
 namespace Soundlyzer.Model
 {
@@ -31,6 +34,10 @@ namespace Soundlyzer.Model
 
         public string PauseResumeLabel => isPaused ? "Wznów" : "Pauza";
 
+        public ICommand StartCommand { get; }
+        public ICommand PauseResumeCommand { get; }
+        public ICommand CancelCommand { get; }
+        public ICommand OpenCommand { get; }
 
         public File(string fileName)
         {
@@ -38,6 +45,10 @@ namespace Soundlyzer.Model
             Status = "Oczekuje";
             Progress = 0;
 
+            StartCommand = new RelayCommand(Start);
+            PauseResumeCommand = new RelayCommand(PauseResume);
+            CancelCommand = new RelayCommand(Cancel);
+            OpenCommand = new RelayCommand(Open);
         }
 
         private void Start()
@@ -61,8 +72,16 @@ namespace Soundlyzer.Model
 
         private void Open()
         {
-            Status = "Otwarto";
-            // logika otwarcia pliku (np. Process.Start)
+            try
+            {
+                // otwiranie okna niemodalnego
+                var viewer = new ImageViewerWindow(FileName);
+                viewer.Show(); 
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Błąd otwierania obrazu: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
