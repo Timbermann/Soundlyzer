@@ -14,6 +14,8 @@ namespace Soundlyzer
         private double _progress;
         private string _status;
         private bool _isProcessing;
+        private bool _isPaused;
+        private ManualResetEventSlim _pauseEvent = new(true);
 
         public string FilePath { get; set; }
         public float[] Samples { get; set; }
@@ -55,12 +57,22 @@ namespace Soundlyzer
                 OnPropertyChanged();
             }
         }
+        public bool IsPaused
+        {
+            get => _isPaused;
+            set
+            {
+                _isPaused = value;
+                OnPropertyChanged();
+            }
+        }
         private async Task StartProcessing()
         {
             if (IsProcessing) return;
             IsProcessing = true;
             Status = "processing...";
             Cts = new CancellationTokenSource();
+            _pauseEvent.Set();
             try
             {
                 await Task.Run(() =>
@@ -95,11 +107,50 @@ namespace Soundlyzer
                 Status = "cancelling...";
             }
         }
+
         public AudioFileViewModel(string path)
         {
             FilePath = path;
             Status = "ready";
             StartCommand = new RelayCommand(async _ => await StartProcessing());
             CancelCommand = new RelayCommand(_ => Cancel());
+        }
+        //obliczanie spektrogramu
+        private Complex[][] CalculateSpectrogramWithPause(float[] samples, int sampleRate, CancellationToken token, int windowSize = 1024, int overlap = 512)
+        {
+            int stride = windowSize - overlap;
+            int segments = (samples.Length - windowSize) / stride;
+            var result = new Complex[segments][];
+
+            for (int i = 0; i < segments; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                _pauseEvent.Wait(token);
+
+                Complex[] buffer = new Complex[windowSize];
+                for (int j = 0; j < windowSize; j++)
+                    buffer[j] = samples[i * stride + j];
+
+                MathNet.Numerics.IntegralTransforms.Fourier.Forward(buffer, MathNet.Numerics.IntegralTransforms.FourierOptions.Matlab);
+                result[i] = buffer;
+                Progress = (double)i / segments * 100;
+            }
+
+            return result;
+        }
+        private void TogglePause()
+        {
+            if (IsPaused)
+            {
+                _pauseEvent.Set();
+                IsPaused = false;
+                Status = "resumed";
+            }
+            else
+            {
+                _pauseEvent.Reset();
+                IsPaused = true;
+                Status = "paused";
+            }
         }
     } }
