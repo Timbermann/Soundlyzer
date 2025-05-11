@@ -1,4 +1,7 @@
-﻿using System.Text;
+﻿using Soundlyzer.Model;
+using Soundlyzer.ViewModel;
+using System.Collections.ObjectModel;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -11,14 +14,12 @@ using System.Windows.Shapes;
 
 namespace Soundlyzer
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public MainWindow()
+        public MainWindow()
 		{
 			InitializeComponent();
-		}
+            DataContext = new MainViewModel();
+        }
 	}
 }
