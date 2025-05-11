@@ -36,5 +36,32 @@ namespace Soundlyzer
 
             return samples.ToArray();
         }
+
+        public static Complex[][] CalculateSpectrogram(float[] samples, int sampleRate, int windowSize = 1024, int overlap = 512)
+        {
+            int stride = windowSize - overlap;
+
+            //podzielenie na okienka
+            int segments = (samples.Length - windowSize) / stride;
+            //jesli nie ma wystarczajaco duzo sampli
+            if (segments < 1) throw new ArgumentException("Sample length is too short for the given window size and overlap.");
+            //tablica na wyniki
+            var result = new Complex[segments][];
+
+            for (int i = 0; i < segments; i++)
+            {
+                Complex[] buffer = new Complex[windowSize];
+                for (int j = 0; j < windowSize; j++)
+                {
+                    buffer[j] = samples[i * stride + j];//zapisanie sampli do bufora
+                }
+                //fft
+                Fourier.Forward(buffer, FourierOptions.Matlab);
+                //dla danego segmentu
+                result[i] = buffer;
+
+            }
+            return result;
+        }
     }
 }
