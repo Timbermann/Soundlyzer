@@ -35,13 +35,13 @@
                                         <Image Source="/Assets/start.png" Width="20" Height="20"/>
                                     </Button>
                                     <Button Command="{Binding PauseResumeCommand}" ToolTip="Pauza/Wznów" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
-                                        <Image Source="/Assets/pause_resume.png" Width="20" Height="20"/>
+                                        <Image Source="/Assets/pause.png" Width="20" Height="20"/>
                                     </Button>
                                     <Button Command="{Binding CancelCommand}" ToolTip="Anuluj" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
                                         <Image Source="/Assets/cancel.png" Width="20" Height="20"/>
                                     </Button>
                                     <Button Command="{Binding OpenCommand}" ToolTip="Otwórz obraz" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
-                                        <Image Source="/Assets/open.png" Width="20" Height="20"/>
+                                        <Image Source="/Assets/open_image.png" Width="20" Height="20"/>
                                     </Button>
                                 </StackPanel>
                             </DataTemplate>
