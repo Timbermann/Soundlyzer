@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Numerics;
 using System.IO;
+using Soundlyzer.Model;
+using Soundlyzer.ViewModel;
+using Soundlyzer.View;
 
 namespace Soundlyzer
 {
@@ -112,8 +115,11 @@ namespace Soundlyzer
         {
             FilePath = path;
             Status = "ready";
-            StartCommand = new RelayCommand(async _ => await StartProcessing());
-            CancelCommand = new RelayCommand(_ => Cancel());
+            Samples = Array.Empty<float>();
+            Spectrogram = Array.Empty<Complex[]>();
+            StartCommand = new RelayCommand(async () => await StartProcessing());
+            CancelCommand = new RelayCommand(Cancel);
+            PauseCommand = new RelayCommand(TogglePause);
         }
         //obliczanie spektrogramu
         private Complex[][] CalculateSpectrogramWithPause(float[] samples, int sampleRate, CancellationToken token, int windowSize = 1024, int overlap = 512)
