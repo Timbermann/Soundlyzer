@@ -12,9 +12,9 @@ using Soundlyzer.View;
 
 namespace Soundlyzer
 {
-    public class AudioFileViewModel
-    {
-        private double _progress;
+	public class AudioFileViewModel : INotifyPropertyChanged
+	{
+		private double _progress;
         private string _status;
         private bool _isProcessing;
         private bool _isPaused;
@@ -82,9 +82,10 @@ namespace Soundlyzer
                 {
                     Samples = AudioProcessor.ReadSamplesMono(FilePath, out int sampleRate);
                     SampleRate = sampleRate;
-                    Spectrogram = AudioProcessor.CalculateSpectrogram(Samples, sampleRate);
-                }, Cts.Token);
-                Status = "done";
+				}, Cts.Token);
+
+				Spectrogram = await CalculateSpectrogramWithPause(Samples, SampleRate, Cts.Token);
+				Status = "done";
             }
 
             catch (OperationCanceledException)
@@ -98,8 +99,8 @@ namespace Soundlyzer
             finally
             {
                 IsProcessing = false;
-                Progress = 100;
-            }
+				if (Status == "done") Progress = 100;
+			}
             
         }
         private void Cancel()
@@ -115,36 +116,40 @@ namespace Soundlyzer
         {
             FilePath = path;
             Status = "ready";
-            Samples = Array.Empty<float>();
-            Spectrogram = Array.Empty<Complex[]>();
+			Progress = 0;
+
             StartCommand = new RelayCommand(async () => await StartProcessing());
             CancelCommand = new RelayCommand(Cancel);
             PauseCommand = new RelayCommand(TogglePause);
         }
-        //obliczanie spektrogramu
-        private Complex[][] CalculateSpectrogramWithPause(float[] samples, int sampleRate, CancellationToken token, int windowSize = 1024, int overlap = 512)
-        {
-            int stride = windowSize - overlap;
-            int segments = (samples.Length - windowSize) / stride;
-            var result = new Complex[segments][];
+		//obliczanie spektrogramu
+		private async Task<Complex[][]> CalculateSpectrogramWithPause(
+			float[] samples, int sampleRate, CancellationToken token,
+			int windowSize = 1024, int overlap = 512)
+		{
+			int stride = windowSize - overlap;
+			int segments = (samples.Length - windowSize) / stride;
+			var result = new Complex[segments][];
 
-            for (int i = 0; i < segments; i++)
-            {
-                token.ThrowIfCancellationRequested();
-                _pauseEvent.Wait(token);
+			for (int i = 0; i < segments; i++)
+			{
+				token.ThrowIfCancellationRequested();
+				_pauseEvent.Wait(token);
 
-                Complex[] buffer = new Complex[windowSize];
-                for (int j = 0; j < windowSize; j++)
-                    buffer[j] = samples[i * stride + j];
+				Complex[] buffer = new Complex[windowSize];
+				for (int j = 0; j < windowSize; j++)
+					buffer[j] = samples[i * stride + j];
 
-                MathNet.Numerics.IntegralTransforms.Fourier.Forward(buffer, MathNet.Numerics.IntegralTransforms.FourierOptions.Matlab);
-                result[i] = buffer;
-                Progress = (double)i / segments * 100;
-            }
+				MathNet.Numerics.IntegralTransforms.Fourier.Forward(buffer, MathNet.Numerics.IntegralTransforms.FourierOptions.Matlab);
+				result[i] = buffer;
 
-            return result;
-        }
-        private void TogglePause()
+				Progress = (double)i / segments * 100;
+				await Task.Delay(1); // pozwala UI odświeżać pasek postępu
+			}
+
+			return result;
+		}
+		private void TogglePause()
         {
             if (IsPaused)
             {
@@ -159,4 +164,5 @@ namespace Soundlyzer
                 Status = "paused";
             }
         }
-    } }
+    } 
+}

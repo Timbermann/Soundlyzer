@@ -7,11 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <Border Background="#FF2A2A3B" CornerRadius="0" Padding="10" 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" Background="#FF2A2A3B" CornerRadius="0" Padding="10" 
                 BorderBrush="#FF4444" BorderThickness="0" SnapsToDevicePixels="True">
-        <ListView ItemsSource="{Binding Files}" Margin="10">
-            <ListView.View>
-                <GridView>
+            <ListView ItemsSource="{Binding Files}" Margin="10">
+                <ListView.View>
+                    <GridView>
                         <GridViewColumn Header="Nazwa Pliku" Width="200" 
                 DisplayMemberBinding="{Binding FileName}" />
 
@@ -19,37 +23,43 @@
                 DisplayMemberBinding="{Binding Status}" />
 
                         <GridViewColumn Header="Postęp">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
                                     <StackPanel MinWidth="100">
                                         <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                    <GridViewColumn Header="Akcje">
-                        <GridViewColumn.CellTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" MinWidth="100">
-                                    <Button Command="{Binding StartCommand}" ToolTip="Startuj" Style="{StaticResource SquareIconButtonStyle}">
-                                        <Image Source="/Assets/start.png" Width="20" Height="20"/>
-                                    </Button>
-                                    <Button Command="{Binding PauseResumeCommand}" ToolTip="Pauza/Wznów" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
-                                        <Image Source="/Assets/pause.png" Width="20" Height="20"/>
-                                    </Button>
-                                    <Button Command="{Binding CancelCommand}" ToolTip="Anuluj" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
-                                        <Image Source="/Assets/cancel.png" Width="20" Height="20"/>
-                                    </Button>
-                                    <Button Command="{Binding OpenCommand}" ToolTip="Otwórz obraz" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
-                                        <Image Source="/Assets/open_image.png" Width="20" Height="20"/>
-                                    </Button>
-                                </StackPanel>
-                            </DataTemplate>
-                        </GridViewColumn.CellTemplate>
-                    </GridViewColumn>
-                </GridView>
-            </ListView.View>
-        </ListView>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Akcje">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" MinWidth="100">
+                                        <Button Command="{Binding StartCommand}" ToolTip="Startuj" Style="{StaticResource SquareIconButtonStyle}">
+                                            <Image Source="/Assets/start.png" Width="20" Height="20"/>
+                                        </Button>
+                                        <Button Command="{Binding PauseResumeCommand}" ToolTip="Pauza/Wznów" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
+                                            <Image Source="/Assets/pause.png" Width="20" Height="20"/>
+                                        </Button>
+                                        <Button Command="{Binding CancelCommand}" ToolTip="Anuluj" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
+                                            <Image Source="/Assets/cancel.png" Width="20" Height="20"/>
+                                        </Button>
+                                        <Button Command="{Binding OpenCommand}" ToolTip="Otwórz obraz" Margin="5,0,0,0" Style="{StaticResource SquareIconButtonStyle}">
+                                            <Image Source="/Assets/open_image.png" Width="20" Height="20"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </Border>
+        <Button Grid.Row="1" 
+            Content="Dodaj pliki" 
+            Command="{Binding AddFilesCommand}" 
+            HorizontalAlignment="Right" 
+            Margin="10"
+            Padding="10,5"/>
     </Grid>
 </Window>
