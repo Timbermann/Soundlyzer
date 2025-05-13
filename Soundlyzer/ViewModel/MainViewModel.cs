@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Soundlyzer.ViewModel
 {
@@ -17,6 +18,19 @@ namespace Soundlyzer.ViewModel
         public MainViewModel()
 		{
 			AddFilesCommand = new RelayCommand(AddFiles);
+			StartAllCommand = new RelayCommand(async () => await StartAllProcessing());
+		}
+		private async Task StartAllProcessing()
+		{
+			var tasks = new List<Task>();
+
+			foreach (var file in Files)
+			{
+				if (!file.IsProcessing)
+					tasks.Add(file.StartProcessing()); 
+			}
+
+			await Task.WhenAll(tasks); 
 		}
 
 		private void AddFiles()
