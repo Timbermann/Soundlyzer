@@ -18,6 +18,11 @@ namespace Soundlyzer
 {
 	public class AudioFileViewModel : INotifyPropertyChanged
 	{
+        private const string statusReady = "ready";
+        private const string statusProcessing = "processing...";
+        private const string statusDone = "done";
+        private const string statusCanceld = "canceled";
+        private const string statusPaused = "paused";
 		private double _progress;
         private string _status;
         private bool _isProcessing;
@@ -52,6 +57,9 @@ namespace Soundlyzer
                 OnPropertyChanged();
             }
         }
+        public bool CanPause => Status == statusProcessing;
+        public bool CanCancel => Status == statusProcessing;
+        public bool CanOpen => Status == statusDone;
         public string Status
         {
             get => _status;
@@ -59,6 +67,9 @@ namespace Soundlyzer
             {
                 _status = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CanPause));
+                OnPropertyChanged(nameof(CanCancel));
+                OnPropertyChanged(nameof(CanOpen));
             }
         }
         public bool IsProcessing
@@ -94,7 +105,7 @@ namespace Soundlyzer
         {
             if (IsProcessing) return;
             IsProcessing = true;
-            Status = "processing...";
+            Status = statusProcessing;
             Cts = new CancellationTokenSource();
             _pauseEvent.Set();
             try
@@ -107,12 +118,11 @@ namespace Soundlyzer
 
 				Spectrogram = await CalculateSpectrogramWithPause(Samples, SampleRate, Cts.Token);
 				SaveSpectrogramAsImage();
-				Status = "done";
+				Status = statusDone;
             }
-
             catch (OperationCanceledException)
             {
-                Status = "canceled";
+                Status = statusCanceld;
             }
             catch (Exception ex)
             {
@@ -121,7 +131,7 @@ namespace Soundlyzer
             finally
             {
                 IsProcessing = false;
-				if (Status == "done") Progress = 100;
+				if (Status == statusDone) Progress = 100;
 			}
             
         }
@@ -130,7 +140,7 @@ namespace Soundlyzer
             if (IsProcessing)
             {
                 Cts.Cancel();
-                Status = "cancelling...";
+                Status = statusCanceld;
                 Progress = 0;
             }
         }
@@ -138,7 +148,7 @@ namespace Soundlyzer
         public AudioFileViewModel(string path)
         {
             FilePath = path;
-            Status = "ready";
+            Status = statusReady;
 			Progress = 0;
 
             StartCommand = new RelayCommand(async () => await StartProcessing());
@@ -181,13 +191,13 @@ namespace Soundlyzer
             {
                 _pauseEvent.Set();
                 IsPaused = false;
-                Status = "resumed";
+                Status = statusProcessing;
             }
             else
             {
                 _pauseEvent.Reset();
                 IsPaused = true;
-                Status = "paused";
+                Status = statusPaused;
             }
         }
 		private void SaveSpectrogramAsImage()
