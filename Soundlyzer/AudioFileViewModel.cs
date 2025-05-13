@@ -16,20 +16,20 @@ using System.Collections.ObjectModel;
 
 namespace Soundlyzer
 {
-	public class AudioFileViewModel : INotifyPropertyChanged
-	{
+    public class AudioFileViewModel : INotifyPropertyChanged
+    {
         private const string statusReady = "ready";
         private const string statusProcessing = "processing...";
         private const string statusDone = "done";
         private const string statusCanceld = "canceled";
         private const string statusPaused = "paused";
-		private double _progress;
+        private double _progress;
         private string _status;
         private bool _isProcessing;
         private bool _isPaused;
 
-		public string FileName => Path.GetFileName(FilePath);
-		public string FilePath { get; set; }
+        public string FileName => Path.GetFileName(FilePath);
+        public string FilePath { get; set; }
         public float[] Samples { get; set; }
         public Complex[][] Spectrogram { get; set; }
         public int SampleRate { get; set; }
@@ -37,8 +37,8 @@ namespace Soundlyzer
 
         public ICommand StartCommand { get; set; }
         public ICommand CancelCommand { get; set; }
-		public ICommand PauseResumeCommand { get; set; }
-		public ICommand OpenCommand { get; set; }
+        public ICommand PauseResumeCommand { get; set; }
+        public ICommand OpenCommand { get; set; }
         public ICommand StartAllCommand { get; set; }
 
 
@@ -56,7 +56,7 @@ namespace Soundlyzer
                 OnPropertyChanged();
             }
         }
-        public bool CanPause => Status == statusProcessing;
+        public bool CanPause => Status == statusProcessing || Status ==statusPaused;
         public bool CanCancel => Status == statusProcessing;
         public bool CanOpen => Status == statusDone;
         public string Status
@@ -186,7 +186,7 @@ namespace Soundlyzer
 		private void TogglePause()
 		{
 			IsPaused = !IsPaused;
-			Status = IsPaused ? "paused" : "resumed";
+			Status = IsPaused ? statusPaused : statusProcessing;
 		}
 
 		private async Task WaitIfPausedAsync(CancellationToken token)
