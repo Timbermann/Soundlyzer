@@ -27,7 +27,6 @@ namespace Soundlyzer
         private string _status;
         private bool _isProcessing;
         private bool _isPaused;
-        private ManualResetEventSlim _pauseEvent = new(true);
 
 		public string FileName => Path.GetFileName(FilePath);
 		public string FilePath { get; set; }
@@ -107,7 +106,6 @@ namespace Soundlyzer
             IsProcessing = true;
             Status = statusProcessing;
             Cts = new CancellationTokenSource();
-            _pauseEvent.Set();
             try
             {
 				(Samples, SampleRate) = await Task.Run(() =>
@@ -170,7 +168,7 @@ namespace Soundlyzer
 			for (int i = 0; i < segments; i++)
 			{
 				token.ThrowIfCancellationRequested();
-				_pauseEvent.Wait(token);
+				await WaitIfPausedAsync(token);
 
 				Complex[] buffer = new Complex[windowSize];
 				for (int j = 0; j < windowSize; j++)
@@ -186,20 +184,19 @@ namespace Soundlyzer
 			return result;
 		}
 		private void TogglePause()
-        {
-            if (IsPaused)
-            {
-                _pauseEvent.Set();
-                IsPaused = false;
-                Status = statusProcessing;
-            }
-            else
-            {
-                _pauseEvent.Reset();
-                IsPaused = true;
-                Status = statusPaused;
-            }
-        }
+		{
+			IsPaused = !IsPaused;
+			Status = IsPaused ? "paused" : "resumed";
+		}
+
+		private async Task WaitIfPausedAsync(CancellationToken token)
+		{
+			while (IsPaused)
+			{
+				await Task.Delay(100, token);
+			}
+		}
+
 		private void SaveSpectrogramAsImage()
 		{
 			if (Spectrogram == null || Spectrogram.Length == 0)
