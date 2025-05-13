@@ -12,6 +12,7 @@ using Soundlyzer.ViewModel;
 using Soundlyzer.View;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
+using System.Collections.ObjectModel;
 
 namespace Soundlyzer
 {
@@ -34,8 +35,12 @@ namespace Soundlyzer
         public ICommand CancelCommand { get; set; }
 		public ICommand PauseResumeCommand { get; set; }
 		public ICommand OpenCommand { get; set; }
+        public ICommand StartAllCommand { get; set; }
 
-		public event PropertyChangedEventHandler PropertyChanged;
+
+        public ObservableCollection<AudioFileViewModel> AudioFiles { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         public double Progress
@@ -74,6 +79,17 @@ namespace Soundlyzer
                 OnPropertyChanged();
             }
         }
+        private async Task StartAllProcessing()
+        {
+            foreach (var audioFile in AudioFiles)
+            {
+                if (!audioFile.IsProcessing)
+                {
+                    await audioFile.StartProcessing();
+                }
+            }
+        }
+
         private async Task StartProcessing()
         {
             if (IsProcessing) return;
@@ -128,9 +144,11 @@ namespace Soundlyzer
             CancelCommand = new RelayCommand(Cancel);
 			PauseResumeCommand = new RelayCommand(TogglePause);
 			OpenCommand = new RelayCommand(OpenSpectrogram);
-		}
-		//obliczanie spektrogramu
-		private async Task<Complex[][]> CalculateSpectrogramWithPause(
+            StartAllCommand = new RelayCommand(async () => await StartAllProcessing());
+        }
+       
+        //obliczanie spektrogramu
+        private async Task<Complex[][]> CalculateSpectrogramWithPause(
 			float[] samples, int sampleRate, CancellationToken token,
 			int windowSize = 1024, int overlap = 512)
 		{
@@ -237,6 +255,6 @@ namespace Soundlyzer
 				}
 			});
 		}
-
-	}
+        
+    }
 }

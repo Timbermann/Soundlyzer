@@ -25,7 +25,7 @@
                         <GridViewColumn Header="Postęp">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel MinWidth="100">
+                                    <StackPanel MinWidth="200">
                                         <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
@@ -55,11 +55,17 @@
                 </ListView.View>
             </ListView>
         </Border>
-        <Button Grid.Row="1" 
-            Content="Dodaj pliki" 
-            Command="{Binding AddFilesCommand}" 
-            HorizontalAlignment="Right" 
-            Margin="10"
-            Padding="10,5"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
+            <Button 
+                Content="Konwertuj wszystkie pliki" 
+                Command="{Binding StartAllCommand}" 
+                Padding="10,5"
+                Margin="0,0,10,0"/>
+            <Button 
+                Content="Dodaj pliki" 
+                Command="{Binding AddFilesCommand}" 
+                Padding="10,5"/>
+        </StackPanel>
     </Grid>
+    
 </Window>
