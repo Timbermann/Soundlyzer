@@ -16,8 +16,13 @@
             <ListView ItemsSource="{Binding Files}" Margin="5" HorizontalContentAlignment="Stretch">
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Nazwa Pliku" Width="200" 
-                DisplayMemberBinding="{Binding FileName}" />
+                        <GridViewColumn Header="Nazwa Pliku" Width="200">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FileName}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
 
                         <GridViewColumn Header="Status" Width="100" >
                             <GridViewColumn.CellTemplate>

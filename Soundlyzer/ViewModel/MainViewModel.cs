@@ -11,8 +11,10 @@ namespace Soundlyzer.ViewModel
 		public ObservableCollection<AudioFileViewModel> Files { get; set; } = new ObservableCollection<AudioFileViewModel>();
 
 		public ICommand AddFilesCommand { get; }
+        public ICommand StartAllCommand { get; }
 
-		public MainViewModel()
+
+        public MainViewModel()
 		{
 			AddFilesCommand = new RelayCommand(AddFiles);
 		}

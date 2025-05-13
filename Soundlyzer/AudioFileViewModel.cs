@@ -39,10 +39,7 @@ namespace Soundlyzer
         public ICommand CancelCommand { get; set; }
         public ICommand PauseResumeCommand { get; set; }
         public ICommand OpenCommand { get; set; }
-        public ICommand StartAllCommand { get; set; }
 
-
-        public ObservableCollection<AudioFileViewModel> AudioFiles { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string name = null)
@@ -89,18 +86,8 @@ namespace Soundlyzer
                 OnPropertyChanged();
             }
         }
-        private async Task StartAllProcessing()
-        {
-            foreach (var audioFile in AudioFiles)
-            {
-                if (!audioFile.IsProcessing)
-                {
-                    await audioFile.StartProcessing();
-                }
-            }
-        }
 
-        private async Task StartProcessing()
+        public async Task StartProcessing()
         {
             if (IsProcessing) return;
             IsProcessing = true;
@@ -153,7 +140,6 @@ namespace Soundlyzer
             CancelCommand = new RelayCommand(Cancel);
 			PauseResumeCommand = new RelayCommand(TogglePause);
 			OpenCommand = new RelayCommand(OpenSpectrogram);
-            StartAllCommand = new RelayCommand(async () => await StartAllProcessing());
         }
        
         //obliczanie spektrogramu
