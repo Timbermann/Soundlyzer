@@ -164,7 +164,7 @@ namespace Soundlyzer
 				result[i] = buffer;
 
 				Progress = (double)i / segments * 100;
-				await Task.Delay(1); // pozwala UI odświeżać pasek postępu
+				await Task.Delay(1); 
 			}
 
 			return result;

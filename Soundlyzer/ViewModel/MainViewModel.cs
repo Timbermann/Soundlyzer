@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows;
 
 namespace Soundlyzer.ViewModel
 {
@@ -30,7 +31,15 @@ namespace Soundlyzer.ViewModel
 					tasks.Add(file.StartProcessing()); 
 			}
 
-			await Task.WhenAll(tasks); 
+			Task.WhenAll(tasks).ContinueWith(t =>
+			{
+				if (t.IsCompletedSuccessfully)
+					MessageBox.Show("Wszystkie pliki zostały przetworzone.");
+				else if (t.IsFaulted)
+					MessageBox.Show("Wystąpił błąd podczas przetwarzania.");
+
+			}, TaskScheduler.FromCurrentSynchronizationContext()); 
+
 		}
 
 		private void AddFiles()
