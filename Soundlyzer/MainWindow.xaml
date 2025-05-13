@@ -11,22 +11,27 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" Background="#FF2A2A3B" CornerRadius="0" Padding="10" 
-                BorderBrush="#FF4444" BorderThickness="0" SnapsToDevicePixels="True">
-            <ListView ItemsSource="{Binding Files}" Margin="10">
+        <Border Grid.Row="0" Background="#FF2A2A3B" CornerRadius="5" Padding="10" 
+                BorderBrush="DarkGray" BorderThickness="1" SnapsToDevicePixels="True">
+            <ListView ItemsSource="{Binding Files}" Margin="5" HorizontalContentAlignment="Stretch">
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="Nazwa Pliku" Width="200" 
                 DisplayMemberBinding="{Binding FileName}" />
 
-                        <GridViewColumn Header="Status" Width="100"
-                DisplayMemberBinding="{Binding Status}" />
+                        <GridViewColumn Header="Status" Width="100" >
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Status}" TextAlignment="Center" HorizontalAlignment="Center"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
 
                         <GridViewColumn Header="Postęp">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel MinWidth="200">
-                                        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" HorizontalAlignment="Center"/>
+                                        <ProgressBar Value="{Binding Progress}" Maximum="100" Height="20" MinWidth="100" Width="auto" HorizontalAlignment="Center"/>
                                     </StackPanel>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
@@ -55,17 +60,20 @@
                 </ListView.View>
             </ListView>
         </Border>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
+        <Border Grid.Row="1" Background="#FF2A2A3B" CornerRadius="5" Padding="10" 
+        BorderBrush="DarkGray" BorderThickness="1" SnapsToDevicePixels="True">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="5">
             <Button 
                 Content="Konwertuj wszystkie pliki" 
                 Command="{Binding StartAllCommand}" 
                 Padding="10,5"
-                Margin="0,0,10,0"/>
+                Margin="5,0,5,0"/>
             <Button 
                 Content="Dodaj pliki" 
                 Command="{Binding AddFilesCommand}" 
                 Padding="10,5"/>
         </StackPanel>
+        </Border>
     </Grid>
-    
+
 </Window>

@@ -131,6 +131,7 @@ namespace Soundlyzer
             {
                 Cts.Cancel();
                 Status = "cancelling...";
+                Progress = 0;
             }
         }
 
