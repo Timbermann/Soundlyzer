@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -9,6 +10,8 @@ using System.IO;
 using Soundlyzer.Model;
 using Soundlyzer.ViewModel;
 using Soundlyzer.View;
+using System.Windows.Media.Imaging;
+using System.Windows.Media;
 
 namespace Soundlyzer
 {
@@ -20,7 +23,8 @@ namespace Soundlyzer
         private bool _isPaused;
         private ManualResetEventSlim _pauseEvent = new(true);
 
-        public string FilePath { get; set; }
+		public string FileName => Path.GetFileName(FilePath);
+		public string FilePath { get; set; }
         public float[] Samples { get; set; }
         public Complex[][] Spectrogram { get; set; }
         public int SampleRate { get; set; }
@@ -28,9 +32,10 @@ namespace Soundlyzer
 
         public ICommand StartCommand { get; set; }
         public ICommand CancelCommand { get; set; }
-        public ICommand PauseCommand { get; set; }
+		public ICommand PauseResumeCommand { get; set; }
+		public ICommand OpenCommand { get; set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string name = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         public double Progress
@@ -78,13 +83,14 @@ namespace Soundlyzer
             _pauseEvent.Set();
             try
             {
-                await Task.Run(() =>
-                {
-                    Samples = AudioProcessor.ReadSamplesMono(FilePath, out int sampleRate);
-                    SampleRate = sampleRate;
+				(Samples, SampleRate) = await Task.Run(() =>
+				{
+					var samples = AudioProcessor.ReadSamplesMono(FilePath, out int sampleRate);
+					return (samples, sampleRate);
 				}, Cts.Token);
 
 				Spectrogram = await CalculateSpectrogramWithPause(Samples, SampleRate, Cts.Token);
+				SaveSpectrogramAsImage();
 				Status = "done";
             }
 
@@ -120,8 +126,9 @@ namespace Soundlyzer
 
             StartCommand = new RelayCommand(async () => await StartProcessing());
             CancelCommand = new RelayCommand(Cancel);
-            PauseCommand = new RelayCommand(TogglePause);
-        }
+			PauseResumeCommand = new RelayCommand(TogglePause);
+			OpenCommand = new RelayCommand(OpenSpectrogram);
+		}
 		//obliczanie spektrogramu
 		private async Task<Complex[][]> CalculateSpectrogramWithPause(
 			float[] samples, int sampleRate, CancellationToken token,
@@ -164,5 +171,72 @@ namespace Soundlyzer
                 Status = "paused";
             }
         }
-    } 
+		private void SaveSpectrogramAsImage()
+		{
+			if (Spectrogram == null || Spectrogram.Length == 0)
+				return;
+
+			int width = Spectrogram.Length;
+			int height = Spectrogram[0].Length;
+
+			var bitmap = new System.Windows.Media.Imaging.WriteableBitmap(
+				width, height, 96, 96, PixelFormats.Gray8, null);
+
+			byte[] pixels = new byte[width * height];
+
+			double maxMagnitude = 0;
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					double mag = Spectrogram[x][y].Magnitude;
+					double db = 20 * Math.Log10(mag + 1e-12); 
+					maxMagnitude = Math.Max(maxMagnitude, db);
+				}
+			}
+
+			for (int x = 0; x < width; x++)
+			{
+				for (int y = 0; y < height; y++)
+				{
+					double mag = Spectrogram[x][y].Magnitude;
+					double db = 20 * Math.Log10(mag + 1e-12);
+					byte intensity = (byte)(Math.Clamp(db / maxMagnitude, 0, 1) * 255);
+
+					int pixelIndex = (height - y - 1) * width + x; 
+					pixels[pixelIndex] = intensity;
+				}
+			}
+
+			bitmap.WritePixels(
+				new Int32Rect(0, 0, width, height),
+				pixels, width, 0);
+
+			string outputPath = Path.ChangeExtension(FilePath, ".png");
+
+			using (var fileStream = new FileStream(outputPath, FileMode.Create))
+			{
+				var encoder = new PngBitmapEncoder();
+				encoder.Frames.Add(BitmapFrame.Create(bitmap));
+				encoder.Save(fileStream);
+			}
+		}
+
+		private void OpenSpectrogram()
+		{
+			Application.Current.Dispatcher.Invoke(() =>
+			{
+				try
+				{
+					var viewer = new Soundlyzer.View.ImageViewerWindow(FilePath);
+					viewer.Show();
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show($"Nie udało się otworzyć obrazu: {ex.Message}", "Błąd", MessageBoxButton.OK, MessageBoxImage.Error);
+				}
+			});
+		}
+
+	}
 }
